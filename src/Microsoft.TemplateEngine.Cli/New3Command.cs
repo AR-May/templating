@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.TemplateLocator;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
@@ -447,6 +448,20 @@ namespace Microsoft.TemplateEngine.Cli
                 return CreationResultStatus.Success;
             }
 
+            try
+            {
+                bool isHiveUpdated = SyncOptionalWorkloads();
+                if (isHiveUpdated)
+                {
+                    // TODO: add LocalizableStrings for the message
+                    Reporter.Output.WriteLine("The template list was synchronized with the Optional SDK Workload templates");
+                }
+            }
+            catch (HiveSynchronizationException hiex)
+            {
+                Reporter.Error.WriteLine(hiex.Message.Bold().Red());
+            }
+
             bool forceCacheRebuild = _commandInput.HasDebuggingFlag("--debug:rebuildcache");
             try
             {
@@ -506,6 +521,64 @@ namespace Microsoft.TemplateEngine.Cli
             }
 
             return true;
+        }
+
+        private bool SyncOptionalWorkloads()
+        {
+            bool isHiveUpdated = false;
+            bool isCustomHive = _commandInput.HasDebuggingFlag("--debug:ephemeral-hive") || _commandInput.HasDebuggingFlag("--debug:custom-hive");
+
+            if (!isCustomHive)
+            {
+
+                /* TODO: find a better way how to get the SDK version
+                      Currently we have options:
+                      - parse the hive path ( _paths.User.BaseDir)
+                      - use the Dotnet.Version();
+
+                   string[] hivePath = _paths.User.BaseDir.Split('/');
+                   string sdkVersion = hivePath[hivePath.Count() - 2].Substring(1);
+                   */
+
+                string sdkVersion = Dotnet.Version().CaptureStdOut().Execute().StdOut.Trim();
+
+                try
+                {
+                    List<string> syncRequestsPaths = new List<string>();
+                    HashSet<string> syncRequestsPackageIds = new HashSet<string>();
+
+                    TemplateLocator optionalWorkloadLocator = new TemplateLocator();
+
+                    IReadOnlyCollection<IOptionalSdkTemplatePackageInfo> syncRequests = optionalWorkloadLocator.GetDotnetSdkTemplatePackages(sdkVersion);
+
+                    foreach (IOptionalSdkTemplatePackageInfo packageInfo in syncRequests)
+                    {
+                        syncRequestsPaths.Add(packageInfo.Path);
+                        syncRequestsPackageIds.Add(packageInfo.TemplatePackageId);
+                    }
+
+                    if (syncRequestsPaths.Count != 0)
+                    {
+                        isHiveUpdated = true;
+
+                        // TODO: package installer should receive an addional paramater to specify the Optional SDK Workload templates
+                        // this marker will be used during the autoremoval procedure.
+
+                        Installer.InstallPackages(syncRequestsPaths);
+                    }
+
+                    /* TODO: add comparision of Optional SDK Workload templates from Hive and returned by TemplateLocator
+                     * implement templates removal if they are not returned by API anymore
+                     */
+
+                }
+                catch (Exception ex)
+                {
+                    throw new HiveSynchronizationException("Error during synchronization with Optional SDK Workloads", sdkVersion, ex);
+                }
+            }
+
+            return isHiveUpdated;
         }
 
         private bool Initialize()
