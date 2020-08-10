@@ -567,10 +567,25 @@ namespace Microsoft.TemplateEngine.Cli
                         Installer.InstallPackages(syncRequestsPaths);
                     }
 
-                    /* TODO: add comparision of Optional SDK Workload templates from Hive and returned by TemplateLocator
-                     * implement templates removal if they are not returned by API anymore
-                     */
+                    // remove uninstalled Optional SDK Workload packages
+                    List<string> removalRequestsPackageIds = new List<string>();
+                    foreach (IInstallUnitDescriptor descriptor in _settingsLoader.InstallUnitDescriptorCache.Descriptors.Values)
+                    {
+                        if (descriptor.IsPartOfAnOptionalWorkload && !syncRequestsPackageIds.Contains(descriptor.Identifier))
+                        {
+                            removalRequestsPackageIds.Add(descriptor.Identifier);
+                        }
+                    }
 
+                    if (removalRequestsPackageIds.Count != 0)
+                    {
+                        isHiveUpdated = true;
+                        IEnumerable<string> failures = Installer.Uninstall(removalRequestsPackageIds);
+                        foreach (string failure in failures)
+                        {
+                            Reporter.Output.WriteLine(string.Format(LocalizableStrings.CouldntUninstall, failure));
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
