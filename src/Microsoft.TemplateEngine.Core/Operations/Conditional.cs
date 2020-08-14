@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     //If the "if" branch is taken, all else and elseif blocks will be omitted, return
                     //  control to the processor so nested "if"s/mutations can be processed. Note that
                     //  this block will not be terminated until the corresponding endif is found
-                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
+                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition, _definition.WholeLine))
                     {
                         if (_definition.WholeLine)
                         {
@@ -283,7 +283,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     // 8-19 attempt to make the same as if() handling
                     //
-                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
+                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition, _definition.WholeLine))
                     {
                         if (_definition.WholeLine)
                         {
@@ -437,10 +437,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     ActionableOperationsEnabled = false;
                 }
 
-                internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
+                internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, bool isWholeLineConditional)
                 {
                     bool faulted;
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted);
+                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted, isWholeLineConditional);
                     return BranchTaken;
                 }
 

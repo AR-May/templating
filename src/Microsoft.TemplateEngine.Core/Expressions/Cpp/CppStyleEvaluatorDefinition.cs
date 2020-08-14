@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
         }
 
-        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
+        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted, bool isWholeLineConditional = false)
         {
             faulted = false;
             TokenTrie trie = new TokenTrie();
@@ -115,10 +115,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 ++braceDepth;
             }
 
-            bool first = true;
+            bool reachedEndOfCondition = false;
             QuotedRegionKind inQuoteType = QuotedRegionKind.None;
 
-            while ((first || braceDepth > 0) && bufferLength > 0)
+            while ((!reachedEndOfCondition || braceDepth > 0) && bufferLength > 0)
             {
                 int targetLen = Math.Min(bufferLength, trie.MaxLength);
                 for (; currentBufferPosition < bufferLength - targetLen + 1;)
@@ -126,7 +126,16 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     int oldBufferPos = currentBufferPosition;
                     if (trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                     {
-                        if (braceDepth == 0)
+                        if (isWholeLineConditional)
+                        {
+                            TokenFamily thisFamily = (TokenFamily)token;
+                            if (thisFamily == TokenFamily.WindowsEOL || thisFamily == TokenFamily.UnixEOL || thisFamily == TokenFamily.LegacyMacEOL)
+                            {
+                                currentBufferPosition = oldBufferPos;
+                                reachedEndOfCondition = true;
+                            }
+                        }
+                        else if (braceDepth == 0)
                         {
                             switch (tokens[tokens.Count - 1].Family)
                             {
@@ -145,11 +154,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                     break;
                                 default:
                                     currentBufferPosition = oldBufferPos;
-                                    first = false;
+                                    reachedEndOfCondition = true;
                                     break;
                             }
 
-                            if (!first)
+                            if (reachedEndOfCondition)
                             {
                                 break;
                             }
@@ -253,14 +262,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                         // so just add the current byte to the currentTokenBytes
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
                     }
-                    else if (braceDepth > 0)
+                    else if (braceDepth > 0 || isWholeLineConditional)
                     {
                         currentTokenFamily = TokenFamily.Literal;
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
                     }
                     else
                     {
-                        first = false;
+                        reachedEndOfCondition = true;
                         break;
                     }
                 }
@@ -525,7 +534,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 }
             }
 
-            Debug.Assert(parents.Count == 0, "Unbalanced condition");
+            //Debug.Assert(parents.Count == 0, "Unbalanced condition");
             return (bool)Convert.ChangeType(current.Evaluate() ?? "false", typeof(bool));
         }
 

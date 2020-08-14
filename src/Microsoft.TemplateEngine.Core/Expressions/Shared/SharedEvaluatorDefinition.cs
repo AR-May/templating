@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         protected abstract string NullTokenValue { get; }
 
-        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
+        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted, bool isWholeLineConditional = false)
         {
             ITokenTrie tokens = Instance.GetSymbols(processor);
             ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
