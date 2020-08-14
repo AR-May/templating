@@ -1571,5 +1571,172 @@ There";
             //  pretend it's false because the inputs and outputs are the same
             Verify(Encoding.UTF8, output, false, value, expected);
         }
+
+        [Fact(DisplayName=nameof(VerifyIfEndifTrueConditionWithoutParentheses))]
+        public void VerifyIfEndifTrueConditionWithoutParentheses()
+        {
+            string value = @"Hello
+    #if VALUE
+value
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection { ["VALUE"] = true };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [Fact(DisplayName=nameof(VerifyIfEndifTrueConditionWithoutParenthesesUsesTrueWithGarbage))]
+        public void VerifyIfEndifTrueConditionWithoutParenthesesUsesTrueWithGarbage()
+        {
+            string value = @"Hello
+    #if true -->
+value
+    #endif -->
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection {};
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [Fact(DisplayName = nameof(VerifyIfElseEndifTrueOrConditionWithoutParentheses))]
+        public void VerifyIfElseEndifTrueOrConditionWithoutParentheses()
+        {
+            string value = @"Hello
+    #if VALUE1 || VALUE2
+value
+    #else
+other
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE1"] = false,
+                ["VALUE2"] = true
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [Fact(DisplayName = nameof(VerifyIfElseEndifFalseAndConditionWithoutParentheses))]
+        public void VerifyIfElseEndifFalseAndConditionWithoutParentheses()
+        {
+            string value = @"Hello
+    #if VALUE1 && VALUE2
+value
+    #else
+other
+    #endif
+There";
+            string expected = @"Hello
+other
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE1"] = false,
+                ["VALUE2"] = true
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [Fact(DisplayName = nameof(VerifyIfElseEndifFalseAndConditionWithoutParentheses))]
+        public void VerifyIfElifElseEndifFalseAndConditionWithoutParentheses()
+        {
+            string value = @"Hello
+    #if VALUE1 && VALUE2
+value
+    #else
+other
+    #endif
+There";
+            string expected = @"Hello
+other
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE1"] = false,
+                ["VALUE2"] = true
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [Fact(DisplayName = nameof(VerifyIfElseEndifTrueEqualToConditionWithoutParentheses))]
+        public void VerifyIfElseEndifTrueEqualToConditionWithoutParentheses()
+        {
+            string value = @"Hello
+    #if VALUE == 3
+value
+    #else
+other
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE"] = 3L
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
     }
 }
