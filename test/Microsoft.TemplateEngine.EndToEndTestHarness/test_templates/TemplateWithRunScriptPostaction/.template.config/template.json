@@ -1,0 +1,70 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithRunScriptPostaction",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithRunScriptPostaction",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithRunScriptPostaction",
+  "shortName": "TestAssets.TemplateWithRunScriptPostaction",
+  "postActions": [
+    {
+      "condition": "(OS != \"Windows_NT\")",
+      "description": "Make scripts executable",
+      "manualInstructions": [ { "text": "Run 'chmod +x *.sh'" } ],
+      "actionId": "cb9a6cf3-4f5c-4860-b9d2-03a574959774",
+      "args": {
+        "+x": "*.sh"
+      },
+      "continueOnError": false
+    },
+    {
+      "condition": "(OS != \"Windows_NT\")",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "foo.sh",
+        "args": "",
+        "redirectStandardOutput": false,
+      },
+      "manualInstructions": [ { "text": "Run './foo.sh'" } ],
+      "continueOnError": false,
+      "description ": "Run script foo.sh"
+    },
+    {
+      "condition": "(OS != \"Windows_NT\")",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "bar/bar.sh",
+        "args": "",
+        "redirectStandardOutput": false,
+      },
+      "manualInstructions": [ { "text": "Run 'bar/bar.sh'" } ],
+      "continueOnError": false,
+      "description ": "Run script bar/bar.sh"
+    },
+    {
+      "condition": "(OS == \"Windows_NT\")",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "foo.cmd",
+        "args": "",
+        "redirectStandardOutput": false,
+      },
+      "manualInstructions": [ { "text": "Run './foo.cmd'" } ],
+      "continueOnError": false,
+      "description ": "Run script foo.cmd"
+    },
+    {
+      "condition": "(OS == \"Windows_NT\")",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "bar/bar.cmd",
+        "args": "",
+        "redirectStandardOutput": false,
+      },
+      "manualInstructions": [ { "text": "Run 'bar/bar.cmd'" } ],
+      "continueOnError": false,
+      "description ": "Run script bar/bar.cmd"
+    }
+  ]
+}

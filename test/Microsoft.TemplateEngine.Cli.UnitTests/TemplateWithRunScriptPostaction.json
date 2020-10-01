@@ -1,0 +1,36 @@
+[
+  {
+    "kind": "file_exists",
+    "path": "foo.sh"
+  },
+  {
+    "kind": "file_exists",
+    "path": "foo.cmd"
+  },
+  {
+    "kind": "file_exists",
+    "path": "bar/bar.sh"
+  },
+  {
+    "kind": "file_exists",
+    "path": "bar/bar.cmd"
+  },
+  {
+    "kind": "file_exists",
+    "path": "result_foo.txt"
+  },
+  {
+    "kind": "file_exists",
+    "path": "result_bar.txt"
+  },
+  {
+    "kind": "file_contains",
+    "path": "result_foo.txt",
+    "text": "Hi there!"
+  },
+  {
+    "kind": "file_contains",
+    "path": "result_bar.txt",
+    "text": "Hello there!"
+  }
+]
