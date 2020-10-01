@@ -1,0 +1,10 @@
+﻿[
+  {
+    "kind": "file_exists",
+    "path": "foo.sh"
+  },
+  {
+    "kind": "file_exists",
+    "path": "bar/bar.sh"
+  }
+]
